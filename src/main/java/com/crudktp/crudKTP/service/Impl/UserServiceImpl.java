@@ -34,19 +34,19 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(saveUser);
 
-        return UserMapper.MAPPER.toUserDtoData(saveUser);
+        return toUserDto(saveUser);
     }
 
     @Override
     public UserDto getDataWargaById(int id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Data Warga not found"));
-        return UserMapper.MAPPER.toUserDtoData(user);
+        return toUserDto(user);
     }
 
     @Override
     public List<UserDto> getAllDataWarga() {
         List<User> users = userRepository.findAll();
-        return users.stream().map(UserMapper.MAPPER::toUserDtoData).toList();
+        return users.stream().map(this::toUserDto).toList();
     }
 
     @Override
@@ -63,12 +63,19 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        return UserMapper.MAPPER.toUserDtoData(user);
+        return toUserDto(user);
     }
 
     @Override
     public void deleteDataWarga(int id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Data Warga not found"));
         userRepository.delete(user);
+    }
+
+    private UserDto toUserDto(User user) {
+        UserDto dto = UserMapper.MAPPER.toUserDtoData(user);
+        dto.setNama(user.getNamaLengkap());
+        dto.setNomorKTP(user.getNomorKtp());
+        return dto;
     }
 }
