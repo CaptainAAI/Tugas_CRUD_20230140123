@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getDataWargaById(String id) {
+    public UserDto getDataWargaById(int id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Data Warga not found"));
         return UserMapper.MAPPER.toUserDtoData(user);
     }
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateDataWarga(String id, UserAddRequest request) {
+    public UserDto updateDataWarga(int id, UserAddRequest request) {
         validationUtil.validate(request);
 
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Data Warga not found"));
@@ -67,14 +67,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteDataWarga(String id) {
+    public void deleteDataWarga(int id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Data Warga not found"));
         userRepository.delete(user);
     }
-
-
-
-
-
-
 }
