@@ -43,6 +43,14 @@ public class UserServiceImpl implements UserService {
         return UserMapper.MAPPER.toUserDtoData(user);
     }
 
+    @Override
+    public List<UserDto> getAllDataWarga() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(UserMapper.MAPPER::toUserDtoData).toList();
+    }
+
+
+
 
 
 }
