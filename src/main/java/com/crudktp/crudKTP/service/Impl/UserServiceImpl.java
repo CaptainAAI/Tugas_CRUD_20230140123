@@ -50,11 +50,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateDataWarga(String nomorKTP, UserAddRequest request) {
+    public UserDto updateDataWarga(String id, UserAddRequest request) {
         validationUtil.validate(request);
 
-        User user = userRepository.findById(nomorKTP).orElseThrow(() -> new RuntimeException("Data warga tidak ditemukan"));
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Data Warga not found"));
 
+        user.setNomorKtp(request.getNomorKTP());
         user.setNamaLengkap(request.getNama());
         user.setAlamat(request.getAlamat());
         user.setTanggalLahir(request.getTanggalLahir());
@@ -63,6 +64,12 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return UserMapper.MAPPER.toUserDtoData(user);
+    }
+
+    @Override
+    public void deleteDataWarga(String id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Data Warga not found"));
+        userRepository.delete(user);
     }
 
 
