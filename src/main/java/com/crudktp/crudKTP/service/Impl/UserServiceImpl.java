@@ -10,6 +10,8 @@ import com.crudktp.crudKTP.util.ValidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserServiceImpl implements UserService {
     @Autowired
@@ -34,4 +36,13 @@ public class UserServiceImpl implements UserService {
 
         return UserMapper.MAPPER.toUserDtoData(saveUser);
     }
+
+    @Override
+    public UserDto getDataWargaById(String id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Data Warga not found"));
+        return UserMapper.MAPPER.toUserDtoData(user);
+    }
+
+
+
 }
