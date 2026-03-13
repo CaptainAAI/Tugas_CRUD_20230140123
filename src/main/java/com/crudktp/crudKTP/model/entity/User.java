@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Entity
 @Table(name = "identitas")
 @Data
@@ -26,7 +28,7 @@ public class User {
     @Column(name = "alamat", nullable = false)
     private String alamat;
     @Column(name = "tanggalLahir", nullable = false)
-    private String tanggalLahir;
+    private Date tanggalLahir;
     @Column(name = "jenisKelamin", nullable = false)
     private String jenisKelamin;
 
