@@ -49,6 +49,23 @@ public class UserServiceImpl implements UserService {
         return users.stream().map(UserMapper.MAPPER::toUserDtoData).toList();
     }
 
+    @Override
+    public UserDto updateDataWarga(String nomorKTP, UserAddRequest request) {
+        validationUtil.validate(request);
+
+        User user = userRepository.findById(nomorKTP).orElseThrow(() -> new RuntimeException("Data warga tidak ditemukan"));
+
+        user.setNamaLengkap(request.getNama());
+        user.setAlamat(request.getAlamat());
+        user.setTanggalLahir(request.getTanggalLahir());
+        user.setJenisKelamin(request.getJenisKelamin());
+
+        userRepository.save(user);
+
+        return UserMapper.MAPPER.toUserDtoData(user);
+    }
+
+
 
 
 
