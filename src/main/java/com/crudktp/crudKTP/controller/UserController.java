@@ -3,6 +3,7 @@ package com.crudktp.crudKTP.controller;
 import com.crudktp.crudKTP.model.dto.UserAddRequest;
 import com.crudktp.crudKTP.model.dto.UserDto;
 import com.crudktp.crudKTP.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,11 +20,11 @@ public class UserController {
     private UserService userService;
 
     @PostMapping(
-            path = "/api/dataWarga",
+            path = "/ktp",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Map<String, Object>> addDataWarga(@RequestBody UserAddRequest request) {
+    public ResponseEntity<Map<String, Object>> addKtp(@Valid @RequestBody UserAddRequest request) {
         UserDto result = userService.AddDataWarga(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
@@ -33,10 +34,10 @@ public class UserController {
     }
 
     @GetMapping(
-            path = "/api/dataWarga",
+            path = "/ktp",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Map<String, Object>> getAllDataWarga() {
+    public ResponseEntity<Map<String, Object>> getAllKtp() {
         List<UserDto> result = userService.getAllDataWarga();
 
         return ResponseEntity.status(HttpStatus.OK).body(Map.of(
@@ -46,10 +47,10 @@ public class UserController {
     }
 
     @GetMapping(
-            path = "/api/dataWarga/{id}",
+            path = "/ktp/{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Map<String, Object>> getDataWargaById(@PathVariable("id") int id) {
+    public ResponseEntity<Map<String, Object>> getKtpById(@PathVariable("id") int id) {
         UserDto result = userService.getDataWargaById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(Map.of(
@@ -59,13 +60,13 @@ public class UserController {
     }
 
     @PutMapping(
-            path = "/api/dataWarga/{id}",
+            path = "/ktp/{id}",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Map<String, Object>> updateDataWarga(
+    public ResponseEntity<Map<String, Object>> updateKtp(
             @PathVariable("id") int id,
-            @RequestBody UserAddRequest request
+            @Valid @RequestBody UserAddRequest request
     ) {
         UserDto result = userService.updateDataWarga(id, request);
 
@@ -76,14 +77,14 @@ public class UserController {
     }
 
     @DeleteMapping(
-            path = "/api/dataWarga/{id}",
+            path = "/ktp/{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Map<String, Object>> deleteDataWarga(@PathVariable("id") int id) {
+    public ResponseEntity<Map<String, Object>> deleteKtp(@PathVariable("id") int id) {
         userService.deleteDataWarga(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(Map.of(
-                "status", "success delete dataWarga with id " + id
+                "status", "success delete ktp with id " + id
         ));
     }
 }

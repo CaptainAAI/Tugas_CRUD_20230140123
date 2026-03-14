@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 @Entity
-@Table(name = "identitas")
+@Table(name = "ktp")
 @Data
 @Builder
 @AllArgsConstructor
