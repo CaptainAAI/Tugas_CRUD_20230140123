@@ -24,6 +24,10 @@ public class UserServiceImpl implements UserService {
     public UserDto AddDataWarga(UserAddRequest request) {
         validationUtil.validate(request);
 
+        if (userRepository.existsByNomorKtp(request.getNomorKTP())) {
+            throw new IllegalStateException("Nomor KTP sudah terdaftar");
+        }
+
         User saveUser = User.builder()
                 .nomorKtp(request.getNomorKTP())
                 .namaLengkap(request.getNama())
@@ -39,7 +43,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getDataWargaById(int id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Data Warga not found"));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Data Warga dengan id " + id + " tidak ditemukan"));
         return toUserDto(user);
     }
 
@@ -53,7 +58,14 @@ public class UserServiceImpl implements UserService {
     public UserDto updateDataWarga(int id, UserAddRequest request) {
         validationUtil.validate(request);
 
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Data Warga not found"));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Data Warga dengan id " + id + " tidak ditemukan"));
+
+        // Jika nomor KTP diubah, pastikan tidak bentrok dengan data lain
+        if (!user.getNomorKtp().equals(request.getNomorKTP()) &&
+                userRepository.existsByNomorKtp(request.getNomorKTP())) {
+            throw new IllegalStateException("Nomor KTP sudah terdaftar");
+        }
 
         user.setNomorKtp(request.getNomorKTP());
         user.setNamaLengkap(request.getNama());
@@ -68,7 +80,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteDataWarga(int id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Data Warga not found"));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Data Warga dengan id " + id + " tidak ditemukan"));
         userRepository.delete(user);
     }
 
