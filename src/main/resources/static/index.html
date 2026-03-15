@@ -3,712 +3,962 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>CRUD KTP - Simple Admin</title>
-    <!-- Tetap pakai jQuery untuk Ajax -->
+    <title>Manajemen Data KTP</title>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <style>
-        /* ============ RESET ============ */
+        /* ===== RESET & BASE ===== */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+          --bg: #080312;
+          --bg-grid: rgba(0, 255, 255, 0.05);
+          --panel: rgba(16, 10, 35, 0.88);
+          --panel-border: rgba(0, 255, 255, 0.22);
+          --text: #f5ecff;
+          --muted: #b7a7d7;
+          --cyan: #00f7ff;
+          --cyan-strong: #00d0ff;
+          --pink: #ff2bd6;
+          --pink-strong: #ff4de1;
+          --purple: #7c3aed;
+          --yellow: #ffd84d;
+          --red: #ff4d6d;
+          --green: #32ffb3;
+          --shadow-cyan: 0 0 0 1px rgba(0,247,255,.15), 0 0 24px rgba(0,247,255,.12);
+          --shadow-pink: 0 0 0 1px rgba(255,43,214,.15), 0 0 28px rgba(255,43,214,.16);
+        }
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0f172a;
-            color: #e5e7eb;
-            min-height: 100vh;
-            display: flex;
+          font-family: 'Segoe UI', Tahoma, sans-serif;
+          background:
+            linear-gradient(rgba(0, 247, 255, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 43, 214, 0.04) 1px, transparent 1px),
+            radial-gradient(circle at top, rgba(124,58,237,.18), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(0,247,255,.08), transparent 22%),
+            var(--bg);
+          background-size: 26px 26px, 26px 26px, auto, auto, auto;
+          color: var(--text);
+          min-height: 100vh;
         }
 
-        /* ============ SIDEBAR ============ */
-        .sidebar {
-            width: 220px;
-            background: #020617;
-            border-right: 1px solid #1f2937;
-            padding: 20px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        /* ===== HEADER ===== */
+        header {
+          background:
+            linear-gradient(135deg, rgba(10, 8, 26, 0.96) 0%, rgba(29, 11, 54, 0.92) 40%, rgba(3, 28, 45, 0.95) 100%);
+          color: var(--text);
+          padding: 28px 20px;
+          text-align: center;
+          box-shadow: 0 0 0 1px rgba(0,247,255,.18), 0 16px 40px rgba(0,0,0,.45), 0 0 40px rgba(255,43,214,.14);
+          border-bottom: 1px solid rgba(0,247,255,.18);
+          position: relative;
+          overflow: hidden;
         }
-        .sidebar-logo {
-            font-size: 18px;
-            font-weight: 700;
-            color: #38bdf8;
+        header::after {
+          content: '';
+          position: absolute;
+          inset: auto 0 0 0;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, var(--cyan), var(--pink), transparent);
+          box-shadow: 0 0 12px var(--cyan), 0 0 16px var(--pink);
         }
-        .sidebar small { color: #6b7280; font-size: 11px; }
-
-        .sidebar-nav { list-style: none; margin-top: 8px; }
-        .sidebar-nav li { margin-bottom: 6px; }
-        .sidebar-link {
-            display: block;
-            padding: 8px 10px;
-            border-radius: 8px;
-            color: #e5e7eb;
-            font-size: 13px;
-            text-decoration: none;
+        header h1 {
+          font-size: 30px;
+          letter-spacing: 1px;
+          color: var(--cyan);
+          text-shadow: 0 0 8px rgba(0,247,255,.55), 0 0 18px rgba(0,247,255,.3);
         }
-        .sidebar-link.active {
-            background: #111827;
-            border: 1px solid #1d4ed8;
-            color: #bfdbfe;
-        }
-        .sidebar-footer {
-            margin-top: auto;
-            font-size: 11px;
-            color: #6b7280;
+        header p  {
+          margin-top: 8px;
+          font-size: 13px;
+          color: var(--muted);
+          letter-spacing: .4px;
         }
 
-        /* ============ MAIN LAYOUT ============ */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+        /* ===== LAYOUT ===== */
+        .container {
+          max-width: 1200px;
+          margin: 34px auto;
+          padding: 0 20px;
         }
 
-        .topbar {
-            padding: 14px 22px;
-            border-bottom: 1px solid #1f2937;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .topbar-title { font-size: 18px; font-weight: 600; }
-        .topbar-sub { font-size: 11px; color: #9ca3af; }
-
-        .topbar-right { font-size: 12px; color: #9ca3af; }
-
-        .page {
-            padding: 22px;
-            display: grid;
-            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
-            gap: 20px;
-        }
-        @media (max-width: 900px) {
-            body { flex-direction: column; }
-            .sidebar { width: 100%; flex-direction: row; align-items: center; }
-            .sidebar-footer { display: none; }
-            .main { flex: none; }
-            .page { grid-template-columns: minmax(0, 1fr); }
-        }
-
-        /* ============ CARD ============ */
+        /* ===== CARD ===== */
         .card {
-            background: #020617;
-            border-radius: 10px;
-            border: 1px solid #1f2937;
-            padding: 18px 18px 20px;
+          background: var(--panel);
+          border-radius: 18px;
+          border: 1px solid var(--panel-border);
+          box-shadow: var(--shadow-cyan), 0 18px 42px rgba(0,0,0,.34);
+          backdrop-filter: blur(12px);
+          padding: 28px 30px;
+          margin-bottom: 28px;
+          position: relative;
+          overflow: hidden;
         }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 14px;
+        .card::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(0,247,255,.04), transparent 35%, rgba(255,43,214,.04));
+          pointer-events: none;
         }
         .card-title {
-            font-size: 15px;
-            font-weight: 600;
-        }
-        .card-title span {
-            display: inline-flex;
-            width: 18px;
-            height: 18px;
-            border-radius: 6px;
-            align-items: center;
-            justify-content: center;
-            background: #1d4ed8;
-            color: #e5e7eb;
-            font-size: 11px;
-            margin-right: 6px;
-        }
-        .card-subtitle {
-            font-size: 11px;
-            color: #6b7280;
-            margin-bottom: 16px;
+          font-size: 17px;
+          font-weight: 700;
+          color: var(--cyan);
+          text-shadow: 0 0 10px rgba(0,247,255,.35);
+          margin-bottom: 22px;
+          padding-left: 14px;
+          border-left: 4px solid var(--pink);
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
-        /* ============ FORM ============ */
+        /* ===== FORM ===== */
         .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px 14px;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 18px;
         }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group.full { grid-column: 1 / -1; }
 
         label {
-            font-size: 11px;
-            color: #9ca3af;
+          font-size: 12px;
+          font-weight: 700;
+          color: #d7cbf8;
+          text-transform: uppercase;
+          letter-spacing: .8px;
         }
-        label span { color: #f97316; }
+        label span { color: var(--pink); }
 
         input[type="text"],
         input[type="date"],
         select {
-            padding: 7px 9px;
-            border-radius: 7px;
-            border: 1px solid #374151;
-            background: #020617;
-            color: #e5e7eb;
-            font-size: 13px;
+          padding: 11px 14px;
+          border: 1.5px solid rgba(0,247,255,.22);
+          border-radius: 10px;
+          font-size: 14px;
+          color: var(--text);
+          background: rgba(7, 10, 24, 0.9);
+          transition: border-color .2s, box-shadow .2s, transform .15s;
+          width: 100%;
         }
-        input::placeholder { color: #4b5563; }
-        input:focus,
+        input[type="text"]:focus,
+        input[type="date"]:focus,
         select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px #1d4ed8;
+          outline: none;
+          border-color: var(--cyan);
+          box-shadow: 0 0 0 3px rgba(0,247,255,.12), 0 0 16px rgba(0,247,255,.16);
+          transform: translateY(-1px);
+        }
+        input::placeholder { color: #8d7fae; }
+        select option {
+          background: #100a23;
+          color: var(--text);
         }
 
-        .btn-group { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+        /* ===== BUTTONS ===== */
+        .btn-group { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
 
         .btn {
-            border: none;
-            border-radius: 7px;
-            padding: 7px 14px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+          padding: 10px 24px;
+          border: 1px solid transparent;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all .2s;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          letter-spacing: .3px;
         }
-        .btn:disabled { opacity: .6; cursor: default; }
+        .btn:disabled { opacity: .65; cursor: not-allowed; transform: none !important; }
+        .btn:active:not(:disabled) { transform: scale(.98); }
 
-        .btn-primary  { background: #3b82f6; color: #f9fafb; }
-        .btn-primary:hover { background: #2563eb; }
-        .btn-secondary{ background: #111827; color: #e5e7eb; border: 1px solid #374151; }
-        .btn-secondary:hover { background: #020617; }
-        .btn-danger   { background: #b91c1c; color: #f9fafb; }
-        .btn-danger:hover { background: #991b1b; }
-        .btn-warning  { background: #ca8a04; color: #111827; }
-        .btn-warning:hover { background: #a16207; }
-
-        .btn-xs { padding: 4px 9px; font-size: 11px; }
-
-        /* ============ TABLE ============ */
-        .table-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
+        .btn-blue {
+          background: linear-gradient(135deg, rgba(0,247,255,.18), rgba(0,208,255,.12));
+          color: var(--cyan);
+          border-color: rgba(0,247,255,.35);
+          box-shadow: 0 0 14px rgba(0,247,255,.14);
         }
-        .badge-count {
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 999px;
-            border: 1px solid #1d4ed8;
-            color: #bfdbfe;
+        .btn-blue:hover:not(:disabled) {
+          background: linear-gradient(135deg, rgba(0,247,255,.26), rgba(0,208,255,.18));
+          box-shadow: 0 0 20px rgba(0,247,255,.2);
         }
 
-        .table-wrapper {
-            border-radius: 8px;
-            border: 1px solid #1f2937;
-            overflow: hidden;
+        .btn-green {
+          background: linear-gradient(135deg, rgba(50,255,179,.18), rgba(50,255,179,.08));
+          color: var(--green);
+          border-color: rgba(50,255,179,.28);
         }
+        .btn-green:hover:not(:disabled) { box-shadow: 0 0 18px rgba(50,255,179,.18); }
+
+        .btn-yellow {
+          background: linear-gradient(135deg, rgba(255,216,77,.2), rgba(255,216,77,.1));
+          color: var(--yellow);
+          border-color: rgba(255,216,77,.3);
+        }
+        .btn-yellow:hover:not(:disabled) { box-shadow: 0 0 18px rgba(255,216,77,.18); }
+
+        .btn-red {
+          background: linear-gradient(135deg, rgba(255,77,109,.18), rgba(255,77,109,.08));
+          color: #ffd4de;
+          border-color: rgba(255,77,109,.3);
+        }
+        .btn-red:hover:not(:disabled) { box-shadow: 0 0 18px rgba(255,77,109,.2); }
+
+        .btn-gray {
+          background: rgba(118, 90, 176, 0.14);
+          color: #d7cbf8;
+          border-color: rgba(183,167,215,.2);
+        }
+        .btn-gray:hover:not(:disabled) { box-shadow: 0 0 16px rgba(183,167,215,.16); }
+
+        .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 8px; }
+
+        /* ===== TABLE ===== */
+        .table-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .data-count {
+          background: rgba(0,247,255,.1);
+          color: var(--cyan);
+          font-size: 13px;
+          font-weight: 700;
+          padding: 4px 12px;
+          border-radius: 20px;
+          border: 1px solid rgba(0,247,255,.2);
+          box-shadow: 0 0 16px rgba(0,247,255,.08);
+        }
+        .table-wrap {
+          overflow-x: auto;
+          border-radius: 12px;
+          border: 1px solid rgba(0,247,255,.14);
+          box-shadow: inset 0 0 0 1px rgba(255,43,214,.05);
+        }
+
         table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            background: #020617;
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 14px;
+          min-width: 760px;
         }
-        thead { background: #020617; }
+        thead tr {
+          background: linear-gradient(90deg, rgba(20,11,46,.98), rgba(4,36,56,.98));
+          color: var(--cyan);
+          box-shadow: inset 0 -1px 0 rgba(0,247,255,.18);
+        }
         thead th {
-            text-align: left;
-            padding: 9px 10px;
-            border-bottom: 1px solid #111827;
-            color: #9ca3af;
-            font-weight: 500;
+          padding: 13px 16px;
+          text-align: left;
+          font-weight: 700;
+          white-space: nowrap;
+          font-size: 13px;
+          letter-spacing: .5px;
         }
         tbody tr {
-            border-bottom: 1px solid #111827;
+          border-bottom: 1px solid rgba(123, 97, 175, 0.18);
+          transition: background .15s, box-shadow .15s;
         }
-        tbody tr:hover { background: #030712; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover {
+          background: rgba(0,247,255,.05);
+          box-shadow: inset 0 0 0 1px rgba(0,247,255,.05);
+        }
         tbody td {
-            padding: 8px 10px;
-            vertical-align: middle;
+          padding: 11px 16px;
+          vertical-align: middle;
+          color: #f5ecff;
         }
-        td.center { text-align: center; }
+        tbody td.center { text-align: center; }
 
         .ktp-number {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-            font-size: 12px;
-            padding: 2px 6px;
-            border-radius: 999px;
-            background: #0b1120;
-            border: 1px solid #1e293b;
+          font-family: 'Courier New', monospace;
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--cyan);
+          background: rgba(0,247,255,.08);
+          border: 1px solid rgba(0,247,255,.16);
+          padding: 3px 8px;
+          border-radius: 5px;
+          box-shadow: 0 0 12px rgba(0,247,255,.08);
         }
-        .alamat-cell { max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 11px;
-        }
-        .pill-l {
-            background: rgba(56, 189, 248, .08);
-            color: #38bdf8;
-        }
-        .pill-p {
-            background: rgba(244, 114, 182, .08);
-            color: #f472b6;
+        .alamat-cell {
+          max-width: 180px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          color: #d8cbfb;
         }
 
+        .badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: .5px;
+        }
+        .badge-l {
+          background: rgba(0,247,255,.08);
+          color: var(--cyan);
+          border: 1px solid rgba(0,247,255,.18);
+        }
+        .badge-p {
+          background: rgba(255,43,214,.09);
+          color: #ff9bf0;
+          border: 1px solid rgba(255,43,214,.18);
+        }
+
+        .action-btns { display: flex; gap: 6px; }
+
+        /* State kosong / loading */
         .state-row td {
-            padding: 40px 12px;
-            text-align: center;
-            color: #6b7280;
+          padding: 50px 20px;
+          text-align: center;
+          color: #8d7fae;
+          font-size: 15px;
+        }
+        .state-icon {
+          font-size: 36px;
+          display: block;
+          margin-bottom: 8px;
+          text-shadow: 0 0 12px rgba(255,43,214,.2);
         }
 
-        /* ============ TOAST ============ */
+        /* ===== TOAST ===== */
         #toast {
-            position: fixed;
-            right: 16px;
-            bottom: 16px;
-            min-width: 260px;
-            max-width: 360px;
-            padding: 10px 12px;
-            border-radius: 9px;
-            display: none;
-            font-size: 12px;
-            border: 1px solid transparent;
-            background: #111827;
+          position: fixed;
+          top: 24px;
+          right: 24px;
+          z-index: 9999;
+          padding: 14px 20px;
+          border-radius: 12px;
+          color: #fff;
+          font-size: 14px;
+          font-weight: 700;
+          min-width: 280px;
+          max-width: 380px;
+          box-shadow: 0 12px 30px rgba(0,0,0,.35);
+          display: none;
+          align-items: center;
+          gap: 10px;
+          border: 1px solid rgba(255,255,255,.08);
+          backdrop-filter: blur(8px);
         }
-        .toast-success { border-color: #16a34a; color: #bbf7d0; }
-        .toast-error   { border-color: #ef4444; color: #fecaca; }
-        .toast-info    { border-color: #3b82f6; color: #bfdbfe; }
+        .toast-success {
+          background: linear-gradient(135deg, rgba(10, 66, 49, .95), rgba(11, 113, 92, .9));
+          box-shadow: 0 0 16px rgba(50,255,179,.24);
+        }
+        .toast-error   {
+          background: linear-gradient(135deg, rgba(110, 20, 41, .95), rgba(170, 31, 73, .92));
+          box-shadow: 0 0 16px rgba(255,77,109,.24);
+        }
+        .toast-info    {
+          background: linear-gradient(135deg, rgba(11, 55, 97, .95), rgba(14, 92, 143, .92));
+          box-shadow: 0 0 16px rgba(0,247,255,.24);
+        }
 
-        /* ============ MODAL & CONFIRM ============ */
-        .overlay,
+        /* ===== OVERLAY MODAL ===== */
+        .overlay {
+          display: none;
+          position: fixed;
+          inset: 0;
+          background: rgba(2, 0, 8, .72);
+          z-index: 1000;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          backdrop-filter: blur(5px);
+        }
+        .overlay.active { display: flex; }
+
+        .modal {
+          background: rgba(14, 8, 30, .96);
+          border-radius: 18px;
+          padding: 32px;
+          width: 100%;
+          max-width: 680px;
+          max-height: 90vh;
+          overflow-y: auto;
+          border: 1px solid rgba(0,247,255,.18);
+          box-shadow: var(--shadow-pink), 0 24px 60px rgba(0,0,0,.42);
+          animation: modalIn .25s ease;
+        }
+        @keyframes modalIn {
+          from { transform: translateY(-20px); opacity: 0; }
+          to   { transform: translateY(0);     opacity: 1; }
+        }
+        .modal-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 24px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid rgba(0,247,255,.12);
+        }
+        .modal-head h3 {
+          font-size: 18px;
+          color: var(--pink);
+          text-shadow: 0 0 10px rgba(255,43,214,.24);
+          font-weight: 700;
+        }
+        .close-btn {
+          width: 34px; height: 34px;
+          border: 1px solid rgba(255,43,214,.18);
+          background: rgba(255,43,214,.08);
+          border-radius: 50%;
+          font-size: 18px;
+          cursor: pointer;
+          color: #ffd1f5;
+          display: flex; align-items: center; justify-content: center;
+          transition: all .2s;
+          line-height: 1;
+        }
+        .close-btn:hover {
+          background: rgba(255,43,214,.16);
+          box-shadow: 0 0 14px rgba(255,43,214,.18);
+        }
+
+        /* ===== CONFIRM DIALOG ===== */
         .confirm-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15,23,42,.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 40;
+          display: none;
+          position: fixed;
+          inset: 0;
+          background: rgba(2, 0, 8, .72);
+          z-index: 2000;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          backdrop-filter: blur(5px);
         }
-        .overlay.active,
         .confirm-overlay.active { display: flex; }
-
-        .modal,
         .confirm-box {
-            background: #020617;
-            border-radius: 10px;
-            border: 1px solid #1f2937;
-            padding: 18px 18px 16px;
-            width: 100%;
-            max-width: 520px;
+          background: rgba(14, 8, 30, .96);
+          border-radius: 18px;
+          padding: 36px 30px;
+          max-width: 380px;
+          width: 100%;
+          text-align: center;
+          border: 1px solid rgba(255,43,214,.18);
+          box-shadow: var(--shadow-pink), 0 20px 60px rgba(0,0,0,.4);
+          animation: modalIn .25s ease;
         }
-        .confirm-box h3 { font-size: 15px; margin-bottom: 4px; }
-        .confirm-box p  { font-size: 12px; color: #9ca3af; margin-bottom: 16px; }
-        .confirm-btns { display: flex; justify-content: flex-end; gap: 8px; }
+        .confirm-icon {
+          font-size: 48px;
+          margin-bottom: 12px;
+          filter: drop-shadow(0 0 12px rgba(255,77,109,.28));
+        }
+        .confirm-box h3 {
+          color: var(--pink);
+          font-size: 20px;
+          margin-bottom: 8px;
+        }
+        .confirm-box p  {
+          color: #cbb8ef;
+          font-size: 14px;
+          margin-bottom: 24px;
+        }
+        .confirm-btns { display: flex; gap: 10px; justify-content: center; }
 
+        /* ===== SPINNER ===== */
         .spinner {
-            width: 14px;
-            height: 14px;
-            border-radius: 999px;
-            border: 2px solid rgba(148,163,184,.8);
-            border-top-color: #e5e7eb;
-            animation: spin .6s linear infinite;
+          width: 16px; height: 16px;
+          border: 2px solid rgba(255,255,255,.3);
+          border-top-color: var(--cyan);
+          border-radius: 50%;
+          animation: spin .6s linear infinite;
+          display: inline-block;
+          box-shadow: 0 0 12px rgba(0,247,255,.18);
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+          .card { padding: 20px; }
+          header h1 { font-size: 23px; }
+          #toast { right: 12px; left: 12px; min-width: unset; }
+        }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <div>
-        <div class="sidebar-logo">KTP Admin</div>
-        <small>Panel sederhana untuk data KTP</small>
-    </div>
-    <ul class="sidebar-nav">
-        <li><a class="sidebar-link active" href="#">Dashboard</a></li>
-        <li><a class="sidebar-link" href="#">Laporan</a></li>
-        <li><a class="sidebar-link" href="#">Pengaturan</a></li>
-    </ul>
-    <div class="sidebar-footer">v1.0 • CRUD KTP</div>
-</div>
+<!-- ======== HEADER ======== -->
+<header>
+    <h1>Manajemen Data KTP</h1>
+    <p>Sistem CRUD Kartu Tanda Penduduk — Spring Boot REST API + jQuery Ajax</p>
+</header>
 
-<div class="main">
-    <div class="topbar">
-        <div>
-            <div class="topbar-title">Manajemen Data KTP</div>
-            <div class="topbar-sub">Form input di kiri, daftar data di kanan • Spring Boot + jQuery Ajax</div>
-        </div>
-        <div class="topbar-right">
-            Backend: <code>/ktp</code>
-        </div>
-    </div>
-
-    <div class="page">
-        <!-- FORM -->
-        <section class="card">
-            <div class="card-header">
-                <div class="card-title"><span>+</span>Tambah Data KTP</div>
-            </div>
-            <p class="card-subtitle">Isi seluruh kolom di bawah ini, lalu tekan tombol Simpan untuk menambahkan data baru.</p>
-
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Nomor KTP <span>*</span></label>
-                    <input type="text" id="f_nomorKtp" maxlength="16" placeholder="16 digit angka" />
-                </div>
-                <div class="form-group">
-                    <label>Nama Lengkap <span>*</span></label>
-                    <input type="text" id="f_namaLengkap" placeholder="Sesuai KTP" />
-                </div>
-                <div class="form-group">
-                    <label>Tanggal Lahir <span>*</span></label>
-                    <input type="date" id="f_tanggalLahir" />
-                </div>
-                <div class="form-group">
-                    <label>Jenis Kelamin <span>*</span></label>
-                    <select id="f_jenisKelamin">
-                        <option value="">Pilih salah satu</option>
-                        <option value="LAKI_LAKI">Laki-laki</option>
-                        <option value="PEREMPUAN">Perempuan</option>
-                    </select>
-                </div>
-                <div class="form-group full">
-                    <label>Alamat <span>*</span></label>
-                    <input type="text" id="f_alamat" placeholder="Alamat lengkap" />
-                </div>
-            </div>
-
-            <div class="btn-group">
-                <button class="btn btn-primary" id="btnSimpan" onclick="createKtp()">Simpan</button>
-                <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
-            </div>
-        </section>
-
-        <!-- TABLE -->
-        <section class="card">
-            <div class="table-toolbar">
-                <div class="card-title" style="font-size:14px;font-weight:600;">
-                    <span>#</span>Daftar Data KTP
-                </div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <span class="badge-count" id="dataCount">0 data</span>
-                    <button class="btn btn-secondary btn-xs" onclick="readAllKtp()">Refresh</button>
-                </div>
-            </div>
-
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                    <tr>
-                        <th style="width:40px;">No</th>
-                        <th>Nomor KTP</th>
-                        <th>Nama</th>
-                        <th>Tgl. Lahir</th>
-                        <th>JK</th>
-                        <th>Alamat</th>
-                        <th style="width:120px; text-align:center;">Aksi</th>
-                    </tr>
-                    </thead>
-                    <tbody id="ktpTableBody">
-                    <tr class="state-row">
-                        <td colspan="7">Memuat data...</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </div>
-</div>
-
-<!-- TOAST -->
+<!-- ======== TOAST ======== -->
 <div id="toast"></div>
 
-<!-- CONFIRM DELETE -->
+<!-- ======== CONFIRM DELETE ======== -->
 <div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-box">
-        <h3>Hapus data ini?</h3>
-        <p>Data KTP yang dihapus tidak dapat dikembalikan.</p>
+        <div class="confirm-icon">🗑️</div>
+        <h3>Hapus Data KTP?</h3>
+        <p>Data yang sudah dihapus tidak dapat dikembalikan. Lanjutkan?</p>
         <div class="confirm-btns">
-            <button class="btn btn-secondary" onclick="closeConfirm()">Batal</button>
-            <button class="btn btn-danger" id="btnConfirmYes">Ya, hapus</button>
+            <button class="btn btn-red" id="btnConfirmYes">Ya, Hapus</button>
+            <button class="btn btn-gray" onclick="closeConfirm()">Batal</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL EDIT -->
-<div class="overlay" id="editOverlay">
-    <div class="modal">
-        <div class="card-header" style="margin-bottom:10px;">
-            <div class="card-title"><span>✎</span>Edit Data KTP</div>
-            <button class="btn btn-secondary btn-xs" onclick="closeEditModal()">Tutup</button>
-        </div>
+<!-- ======== MAIN CONTENT ======== -->
+<div class="container">
 
-        <input type="hidden" id="e_id" />
+    <!-- FORM TAMBAH DATA -->
+    <div class="card">
+        <div class="card-title">➕ Tambah Data KTP Baru</div>
         <div class="form-grid">
+
             <div class="form-group">
                 <label>Nomor KTP <span>*</span></label>
-                <input type="text" id="e_nomorKtp" maxlength="16" />
+                <input type="text" id="f_nomorKtp"
+                       maxlength="16"
+                       placeholder="16 digit angka (contoh: 3201234567890001)">
             </div>
+
             <div class="form-group">
                 <label>Nama Lengkap <span>*</span></label>
-                <input type="text" id="e_namaLengkap" />
+                <input type="text" id="f_namaLengkap"
+                       placeholder="Nama sesuai KTP">
             </div>
+
             <div class="form-group">
                 <label>Tanggal Lahir <span>*</span></label>
-                <input type="date" id="e_tanggalLahir" />
+                <input type="date" id="f_tanggalLahir">
             </div>
+
             <div class="form-group">
                 <label>Jenis Kelamin <span>*</span></label>
+                <select id="f_jenisKelamin">
+                    <option value="">-- Pilih Jenis Kelamin --</option>
+                    <option value="LAKI_LAKI">Laki-laki</option>
+                    <option value="PEREMPUAN">Perempuan</option>
+                </select>
+            </div>
+
+            <div class="form-group full">
+                <label>Alamat <span>*</span></label>
+                <input type="text" id="f_alamat"
+                       placeholder="Alamat lengkap sesuai KTP">
+            </div>
+
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-blue" id="btnSimpan" onclick="createKtp()">
+                💾 Simpan Data
+            </button>
+            <button class="btn btn-gray" onclick="resetForm()">
+                ↺ Reset Form
+            </button>
+        </div>
+    </div>
+
+    <!-- TABEL DATA KTP -->
+    <div class="card">
+        <div class="table-header">
+            <div class="card-title" style="margin-bottom:0">
+                📋 Daftar Data KTP
+                <span class="data-count" id="dataCount">0 data</span>
+            </div>
+            <button class="btn btn-blue btn-sm" onclick="readAllKtp()">
+                🔄 Refresh
+            </button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th style="width:50px">No</th>
+                    <th>Nomor KTP</th>
+                    <th>Nama Lengkap</th>
+                    <th>Tgl. Lahir</th>
+                    <th>Jenis Kelamin</th>
+                    <th>Alamat</th>
+                    <th style="width:140px;text-align:center">Aksi</th>
+                </tr>
+                </thead>
+                <tbody id="ktpTableBody">
+                <tr class="state-row">
+                    <td colspan="7">
+                        <span class="state-icon">⏳</span>
+                        Memuat data...
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div><!-- end .container -->
+
+<!-- ======== MODAL EDIT ======== -->
+<div class="overlay" id="editOverlay">
+    <div class="modal">
+        <div class="modal-head">
+            <h3>✏️ Edit Data KTP</h3>
+            <button class="close-btn" onclick="closeEditModal()">✕</button>
+        </div>
+
+        <input type="hidden" id="e_id">
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Nomor KTP <span style="color:red">*</span></label>
+                <input type="text" id="e_nomorKtp" maxlength="16">
+            </div>
+            <div class="form-group">
+                <label>Nama Lengkap <span style="color:red">*</span></label>
+                <input type="text" id="e_namaLengkap">
+            </div>
+            <div class="form-group">
+                <label>Tanggal Lahir <span style="color:red">*</span></label>
+                <input type="date" id="e_tanggalLahir">
+            </div>
+            <div class="form-group">
+                <label>Jenis Kelamin <span style="color:red">*</span></label>
                 <select id="e_jenisKelamin">
                     <option value="LAKI_LAKI">Laki-laki</option>
                     <option value="PEREMPUAN">Perempuan</option>
                 </select>
             </div>
             <div class="form-group full">
-                <label>Alamat <span>*</span></label>
-                <input type="text" id="e_alamat" />
+                <label>Alamat <span style="color:red">*</span></label>
+                <input type="text" id="e_alamat">
             </div>
         </div>
 
         <div class="btn-group">
-            <button class="btn btn-primary" id="btnUpdate" onclick="updateKtp()">Simpan Perubahan</button>
-            <button class="btn btn-secondary" onclick="closeEditModal()">Batal</button>
+            <button class="btn btn-yellow" id="btnUpdate" onclick="updateKtp()">
+                ✔️ Update Data
+            </button>
+            <button class="btn btn-gray" onclick="closeEditModal()">
+                Batal
+            </button>
         </div>
     </div>
 </div>
 
+<!-- ======== JAVASCRIPT ======== -->
 <script>
+    /* ==============================================
+       KONFIGURASI
+       ============================================== */
     const BASE_URL = 'http://localhost:8080/ktp';
     let pendingDeleteId = null;
 
+    /* ==============================================
+       TOAST NOTIFICATION
+       ============================================== */
     function showToast(message, type = 'success') {
-        const toast = $('#toast');
-        toast.removeClass().addClass(`toast-${type}`).text(message).fadeIn(150);
-        clearTimeout(toast.data('timer'));
-        toast.data('timer', setTimeout(() => toast.fadeOut(200), 3500));
+      const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+      const el = $('#toast');
+      el.attr('class', `toast-${type}`)
+        .css('display', 'flex')
+        .html(`<span>${icons[type]}</span><span>${message}</span>`);
+      clearTimeout(el.data('timer'));
+      el.data('timer', setTimeout(() => el.fadeOut(400), 3800));
     }
 
+    /* ==============================================
+       RESET FORM TAMBAH
+       ============================================== */
     function resetForm() {
-        $('#f_nomorKtp, #f_namaLengkap, #f_alamat').val('');
-        $('#f_tanggalLahir').val('');
-        $('#f_jenisKelamin').val('');
-        $('#f_nomorKtp').focus();
+      $('#f_nomorKtp, #f_namaLengkap, #f_alamat').val('');
+      $('#f_tanggalLahir').val('');
+      $('#f_jenisKelamin').val('');
+      $('#f_nomorKtp').focus();
     }
 
+    /* ==============================================
+       MODAL EDIT
+       ============================================== */
     function closeEditModal() {
-        $('#editOverlay').removeClass('active');
+      $('#editOverlay').removeClass('active');
     }
 
+    /* ==============================================
+       CONFIRM DELETE
+       ============================================== */
     function showConfirm(id) {
-        pendingDeleteId = id;
-        $('#confirmOverlay').addClass('active');
+      pendingDeleteId = id;
+      $('#confirmOverlay').addClass('active');
+    }
+    function closeConfirm() {
+      pendingDeleteId = null;
+      $('#confirmOverlay').removeClass('active');
     }
 
-    function closeConfirm() {
-        pendingDeleteId = null;
-        $('#confirmOverlay').removeClass('active');
+    /* ==============================================
+       HELPER — Ambil data form
+       ============================================== */
+    function normalizeJenisKelamin(value) {
+      if (!value) return '';
+      const normalized = String(value).trim().toUpperCase().replace(/_/g, '-');
+      if (normalized === 'LAKI-LAKI') return 'LAKI-LAKI';
+      if (normalized === 'PEREMPUAN') return 'PEREMPUAN';
+      return normalized;
     }
 
     function getFormData(prefix) {
-        return {
-            nomorKtp    : $(`#${prefix}_nomorKtp`).val().trim(),
-            nama        : $(`#${prefix}_namaLengkap`).val().trim(),
-            alamat      : $(`#${prefix}_alamat`).val().trim(),
-            tanggalLahir: $(`#${prefix}_tanggalLahir`).val(),
-            jenisKelamin: $(`#${prefix}_jenisKelamin`).val()
-        };
+      return {
+        nomorKtp    : $(`#${prefix}_nomorKtp`).val().trim(),
+        nama        : $(`#${prefix}_namaLengkap`).val().trim(),
+        alamat      : $(`#${prefix}_alamat`).val().trim(),
+        tanggalLahir: $(`#${prefix}_tanggalLahir`).val(),
+        jenisKelamin: normalizeJenisKelamin($(`#${prefix}_jenisKelamin`).val())
+      };
     }
 
     function validateData(data) {
-        if (!data.nomorKtp || !data.nama || !data.alamat || !data.tanggalLahir || !data.jenisKelamin) {
-            showToast('Semua field wajib diisi.', 'error');
-            return false;
-        }
-        if (!/^\d{16}$/.test(data.nomorKtp)) {
-            showToast('Nomor KTP harus tepat 16 digit angka.', 'error');
-            return false;
-        }
-        return true;
+      if (!data.nomorKtp || !data.nama || !data.alamat
+          || !data.tanggalLahir || !data.jenisKelamin) {
+        showToast('Semua field wajib diisi!', 'error');
+        return false;
+      }
+      if (!/^\d{16}$/.test(data.nomorKtp)) {
+        showToast('Nomor KTP harus tepat 16 digit angka!', 'error');
+        return false;
+      }
+      return true;
     }
 
     function setLoading(btnId, loading, defaultHtml) {
-        const btn = $(`#${btnId}`);
-        if (loading) {
-            btn.html('<span class="spinner"></span>').prop('disabled', true);
-        } else {
-            btn.html(defaultHtml).prop('disabled', false);
-        }
+      const btn = $(`#${btnId}`);
+      if (loading) {
+        btn.html('<span class="spinner"></span> Memproses...').prop('disabled', true);
+      } else {
+        btn.html(defaultHtml).prop('disabled', false);
+      }
     }
 
+    /* ==============================================
+       READ ALL — GET /ktp
+       ============================================== */
     function readAllKtp() {
-        $('#ktpTableBody').html('<tr class="state-row"><td colspan="7">Memuat data...</td></tr>');
+      $('#ktpTableBody').html(`
+        <tr class="state-row">
+          <td colspan="7">
+            <span class="state-icon">⏳</span>Memuat data...
+          </td>
+        </tr>`);
 
-        $.ajax({
-            url: BASE_URL,
-            method: 'GET',
-            success: function (res) {
-                const list = res.data || [];
-                $('#dataCount').text(list.length + ' data');
-                const tbody = $('#ktpTableBody');
-                tbody.empty();
+      $.ajax({
+        url    : BASE_URL,
+        method : 'GET',
+        success: function (res) {
+          const tbody = $('#ktpTableBody');
+          tbody.empty();
 
-                if (list.length === 0) {
-                    tbody.html('<tr class="state-row"><td colspan="7">Belum ada data KTP.</td></tr>');
-                    return;
-                }
+          const list = res.data || [];
+          $('#dataCount').text(list.length + ' data');
 
-                list.forEach(function (k, i) {
-                    const badge = k.jenisKelamin === 'LAKI_LAKI'
-                        ? '<span class="pill pill-l">Laki-laki</span>'
-                        : '<span class="pill pill-p">Perempuan</span>';
+          if (list.length === 0) {
+            tbody.html(`
+              <tr class="state-row">
+                <td colspan="7">
+                  <span class="state-icon">📭</span>
+                  Belum ada data KTP. Silakan tambahkan data baru.
+                </td>
+              </tr>`);
+            return;
+          }
 
-                    tbody.append(`
-                        <tr>
-                            <td class="center">${i + 1}</td>
-                            <td><span class="ktp-number">${k.nomorKtp}</span></td>
-                            <td>${k.nama}</td>
-                            <td>${k.tanggalLahir}</td>
-                            <td>${badge}</td>
-                            <td><div class="alamat-cell" title="${k.alamat}">${k.alamat}</div></td>
-                            <td class="center">
-                                <button class="btn btn-warning btn-xs" onclick="openEditModal(${k.id})">Edit</button>
-                                <button class="btn btn-danger btn-xs" onclick="showConfirm(${k.id})">Hapus</button>
-                            </td>
-                        </tr>`);
-                });
-            },
-            error: function (xhr) {
-                const msg = xhr.responseJSON?.message || 'Gagal memuat data.';
-                showToast(msg, 'error');
-                $('#ktpTableBody').html('<tr class="state-row"><td colspan="7">Gagal memuat data.</td></tr>');
-            }
-        });
+          list.forEach(function (k, i) {
+            const jenisKelamin = normalizeJenisKelamin(k.jenisKelamin);
+            const badge = jenisKelamin === 'LAKI-LAKI'
+              ? '<span class="badge badge-l">♂ Laki-laki</span>'
+              : '<span class="badge badge-p">♀ Perempuan</span>';
+
+            tbody.append(`
+              <tr>
+                <td class="center">${i + 1}</td>
+                <td><span class="ktp-number">${k.nomorKtp}</span></td>
+                <td><strong>${k.nama}</strong></td>
+                <td>${k.tanggalLahir}</td>
+                <td>${badge}</td>
+                <td>
+                  <div class="alamat-cell" title="${k.alamat}">${k.alamat}</div>
+                </td>
+                <td>
+                  <div class="action-btns" style="justify-content:center">
+                    <button class="btn btn-yellow btn-sm"
+                      onclick="openEditModal(${k.id})">✏️ Edit</button>
+                    <button class="btn btn-red btn-sm"
+                      onclick="showConfirm(${k.id})">🗑️</button>
+                  </div>
+                </td>
+              </tr>`);
+          });
+        },
+        error: function (xhr) {
+          const msg = xhr.responseJSON?.message || 'Gagal memuat data';
+          showToast(msg, 'error');
+          $('#ktpTableBody').html(`
+            <tr class="state-row">
+              <td colspan="7">
+                <span class="state-icon">⚠️</span>Gagal memuat data. Cek koneksi server.
+              </td>
+            </tr>`);
+        }
+      });
     }
 
+    /* ==============================================
+       CREATE — POST /ktp
+       ============================================== */
     function createKtp() {
-        const data = getFormData('f');
-        if (!validateData(data)) return;
+      const data = getFormData('f');
+      if (!validateData(data)) return;
 
-        setLoading('btnSimpan', true, 'Simpan');
+      setLoading('btnSimpan', true, '');
 
-        $.ajax({
-            url: BASE_URL,
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(data),
-            success: function () {
-                showToast('Data KTP berhasil ditambahkan.', 'success');
-                resetForm();
-                readAllKtp();
-            },
-            error: function (xhr) {
-                const err = xhr.responseJSON;
-                let msg = 'Gagal menyimpan data.';
-                if (err) {
-                    if (err.errors && typeof err.errors === 'object') {
-                        msg = Object.values(err.errors).join(' | ');
-                    } else if (err.message) {
-                        msg = err.message;
-                    }
-                }
-                showToast(msg, 'error');
-            },
-            complete: function () {
-                setLoading('btnSimpan', false, 'Simpan');
+      $.ajax({
+        url        : BASE_URL,
+        method     : 'POST',
+        contentType: 'application/json',
+        data       : JSON.stringify(data),
+        success    : function () {
+          showToast('Data KTP berhasil ditambahkan', 'success');
+          resetForm();
+          readAllKtp();
+        },
+        error: function (xhr) {
+          const errData = xhr.responseJSON;
+          let msg = 'Gagal menyimpan data';
+          if (errData) {
+            if (errData.errors && typeof errData.errors === 'object') {
+              msg = Object.values(errData.errors).join(' | ');
+            } else {
+              msg = errData.message || msg;
             }
-        });
+          }
+          showToast(msg, 'error');
+        },
+        complete: function () {
+          setLoading('btnSimpan', false, '💾 Simpan Data');
+        }
+      });
     }
 
+    /* ==============================================
+       READ BY ID + BUKA MODAL EDIT — GET /ktp/{id}
+       ============================================== */
     function openEditModal(id) {
-        $.ajax({
-            url: BASE_URL + '/' + id,
-            method: 'GET',
-            success: function (res) {
-                const k = res.data;
-                $('#e_id').val(k.id);
-                $('#e_nomorKtp').val(k.nomorKtp);
-                $('#e_namaLengkap').val(k.nama);
-                $('#e_alamat').val(k.alamat);
-                $('#e_tanggalLahir').val(k.tanggalLahir);
-                $('#e_jenisKelamin').val(k.jenisKelamin);
-                $('#editOverlay').addClass('active');
-            },
-            error: function (xhr) {
-                const msg = xhr.responseJSON?.message || 'Data tidak ditemukan.';
-                showToast(msg, 'error');
-            }
-        });
+      $.ajax({
+        url    : BASE_URL + '/' + id,
+        method : 'GET',
+        success: function (res) {
+          const k = res.data;
+          $('#e_id').val(k.id);
+          $('#e_nomorKtp').val(k.nomorKtp);
+          $('#e_namaLengkap').val(k.nama);
+          $('#e_alamat').val(k.alamat);
+          $('#e_tanggalLahir').val(k.tanggalLahir);
+          $('#e_jenisKelamin').val(normalizeJenisKelamin(k.jenisKelamin));
+          $('#editOverlay').addClass('active');
+        },
+        error: function (xhr) {
+          const msg = xhr.responseJSON?.message || 'Data tidak ditemukan';
+          showToast(msg, 'error');
+        }
+      });
     }
 
+    /* ==============================================
+       UPDATE — PUT /ktp/{id}
+       ============================================== */
     function updateKtp() {
-        const id = $('#e_id').val();
-        const data = getFormData('e');
-        if (!validateData(data)) return;
+      const id = $('#e_id').val();
+      if (!id) {
+        showToast('ID data tidak ditemukan', 'error');
+        return;
+      }
 
-        setLoading('btnUpdate', true, 'Simpan Perubahan');
+      const data = getFormData('e');
+      if (!validateData(data)) return;
 
-        $.ajax({
-            url: BASE_URL + '/' + id,
-            method: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify(data),
-            success: function () {
-                showToast('Data KTP berhasil diperbarui.', 'success');
-                closeEditModal();
-                readAllKtp();
-            },
-            error: function (xhr) {
-                const err = xhr.responseJSON;
-                let msg = 'Gagal mengupdate data.';
-                if (err) {
-                    if (err.errors && typeof err.errors === 'object') {
-                        msg = Object.values(err.errors).join(' | ');
-                    } else if (err.message) {
-                        msg = err.message;
-                    }
-                }
-                showToast(msg, 'error');
-            },
-            complete: function () {
-                setLoading('btnUpdate', false, 'Simpan Perubahan');
+      setLoading('btnUpdate', true, '');
+
+      $.ajax({
+        url        : BASE_URL + '/' + id,
+        method     : 'PUT',
+        contentType: 'application/json',
+        data       : JSON.stringify(data),
+        success    : function () {
+          showToast('Data KTP berhasil diupdate', 'success');
+          closeEditModal();
+          readAllKtp();
+        },
+        error: function (xhr) {
+          const errData = xhr.responseJSON;
+          let msg = 'Gagal mengupdate data';
+          if (errData) {
+            if (errData.errors && typeof errData.errors === 'object') {
+              msg = Object.values(errData.errors).join(' | ');
+            } else {
+              msg = errData.message || msg;
             }
-        });
+          }
+          showToast(msg, 'error');
+        },
+        complete: function () {
+          setLoading('btnUpdate', false, '✔️ Update Data');
+        }
+      });
     }
 
+    /* ==============================================
+       DELETE — DELETE /ktp/{id}
+       ============================================== */
     $('#btnConfirmYes').on('click', function () {
-        if (!pendingDeleteId) return;
-        const id = pendingDeleteId;
-        closeConfirm();
+      if (!pendingDeleteId) return;
 
-        $.ajax({
-            url: BASE_URL + '/' + id,
-            method: 'DELETE',
-            success: function (res) {
-                const msg = res.message || 'Data KTP berhasil dihapus.';
-                showToast(msg, 'success');
-                readAllKtp();
-            },
-            error: function (xhr) {
-                const msg = xhr.responseJSON?.message || 'Gagal menghapus data.';
-                showToast(msg, 'error');
-            }
-        });
+      const id = pendingDeleteId;
+      closeConfirm();
+
+      $.ajax({
+        url    : BASE_URL + '/' + id,
+        method : 'DELETE',
+        success: function (res) {
+          showToast(res.status || 'Data KTP berhasil dihapus', 'success');
+          readAllKtp();
+        },
+        error: function (xhr) {
+          const msg = xhr.responseJSON?.message || 'Gagal menghapus data';
+          showToast(msg, 'error');
+        }
+      });
     });
 
+    /* ==============================================
+       TUTUP MODAL KLIK DI LUAR AREA
+       ============================================== */
     $('#editOverlay').on('click', function (e) {
-        if ($(e.target).is('#editOverlay')) closeEditModal();
+      if ($(e.target).is('#editOverlay')) closeEditModal();
     });
     $('#confirmOverlay').on('click', function (e) {
-        if ($(e.target).is('#confirmOverlay')) closeConfirm();
+      if ($(e.target).is('#confirmOverlay')) closeConfirm();
     });
 
+    /* ==============================================
+       INIT — Load data saat halaman dibuka
+       ============================================== */
     $(document).ready(function () {
-        readAllKtp();
+      readAllKtp();
     });
 </script>
 
 </body>
 </html>
+
