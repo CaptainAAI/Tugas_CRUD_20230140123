@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class UserDto {
     private int id;
-    private String nomorKTP;
+    private String nomorKtp;
     private String nama;
     private String alamat;
     private String tanggalLahir;

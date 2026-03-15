@@ -24,12 +24,12 @@ public class UserServiceImpl implements UserService {
     public UserDto AddDataWarga(UserAddRequest request) {
         validationUtil.validate(request);
 
-        if (userRepository.existsByNomorKtp(request.getNomorKTP())) {
+        if (userRepository.existsByNomorKtp(request.getNomorKtp())) {
             throw new IllegalStateException("Nomor KTP sudah terdaftar");
         }
 
         User saveUser = User.builder()
-                .nomorKtp(request.getNomorKTP())
+                .nomorKtp(request.getNomorKtp())
                 .namaLengkap(request.getNama())
                 .alamat(request.getAlamat())
                 .tanggalLahir(request.getTanggalLahir())
@@ -61,13 +61,12 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Data Warga dengan id " + id + " tidak ditemukan"));
 
-        // Jika nomor KTP diubah, pastikan tidak bentrok dengan data lain
-        if (!user.getNomorKtp().equals(request.getNomorKTP()) &&
-                userRepository.existsByNomorKtp(request.getNomorKTP())) {
+        if (!user.getNomorKtp().equals(request.getNomorKtp()) &&
+                userRepository.existsByNomorKtp(request.getNomorKtp())) {
             throw new IllegalStateException("Nomor KTP sudah terdaftar");
         }
 
-        user.setNomorKtp(request.getNomorKTP());
+        user.setNomorKtp(request.getNomorKtp());
         user.setNamaLengkap(request.getNama());
         user.setAlamat(request.getAlamat());
         user.setTanggalLahir(request.getTanggalLahir());
@@ -88,7 +87,7 @@ public class UserServiceImpl implements UserService {
     private UserDto toUserDto(User user) {
         UserDto dto = UserMapper.MAPPER.toUserDtoData(user);
         dto.setNama(user.getNamaLengkap());
-        dto.setNomorKTP(user.getNomorKtp());
+        dto.setNomorKtp(user.getNomorKtp());
         return dto;
     }
 }

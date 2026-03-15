@@ -8,8 +8,8 @@ import java.util.Date;
 
 @Data
 public class UserAddRequest {
-    @NotBlank(message = "nomorKTP wajib diisi")
-    private String nomorKTP;
+    @NotBlank(message = "nomorKtp wajib diisi")
+    private String nomorKtp;
 
     @NotBlank(message = "nama wajib diisi")
     private String nama;

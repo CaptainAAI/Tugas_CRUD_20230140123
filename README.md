@@ -2,7 +2,7 @@ POST
 http://localhost:8080/ktp
 --------------------------------------
 {
-  "nomorKTP": "32010101444132143",
+  "nomorKtp": "32010101444132143",
   "nama": "Budi bahlol",
   "alamat": "Jl. Merdeka No. 10",
   "tanggalLahir": "2005-01-55",
