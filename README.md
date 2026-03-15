@@ -24,3 +24,6 @@ DELETE
 http://localhost:8080/ktp/X
 (replace x with id)
 --------------------------------------
+https://drive.google.com/drive/folders/1oTedhJVL7cDE1_Dfc1ifif8EMGHcupjw?usp=sharing
+(GITHUB ERROR CANT UPLOAD IMAGE SO I PUT SCREENSHOT HERE)
+--------------------------------------
