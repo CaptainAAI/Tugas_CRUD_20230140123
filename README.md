@@ -6,7 +6,7 @@ http://localhost:8080/ktp
   "nama": "Budi bahlol",
   "alamat": "Jl. Merdeka No. 10",
   "tanggalLahir": "2005-01-55",
-  "jenisKelamin": "Netral"
+  "jenisKelamin": "LAKI_LAKI"
 }
 --------------------------------------
 GET *ALL
